@@ -1,0 +1,57 @@
+body {
+    background-color:lavender;
+    color:navy;
+    font-family: 'Georgia', serif;
+    margin: 0;
+    padding: 0;
+    
+    
+
+}
+
+.header {
+    background-color:hotpink;
+    padding: 20px;
+    text-align: center;
+}
+
+nav a {
+    color: navy;
+    margin: 0 10px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+.content-block, .media-block, .tableau-block {
+    margin: 40px auto;
+    padding: 20px;
+    max-width: 800px;
+    background-color:hotpink;
+    border-radius: 10px;
+    
+}
+.media-block{
+    text-align: center;
+}
+
+.tableau-block{
+    text-align: center;
+}
+
+h1, h2, h3 {
+    color: navy;
+}
+
+img {
+    max-width: 100%;
+    border-radius: 6px;
+}
+
+footer {
+    text-align: center;
+    margin: 40px 0;
+}
