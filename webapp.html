@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Hunger Games: Celebrity Edition</title>
+  <style>
+    body {
+      background-color:honeydew;
+      color: hotpink;
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      padding: 3rem;
+      margin: 0;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+    }
+
+    button {
+      background-color: hotpink;
+      color: white;
+      font-size: 1.2rem;
+      padding: 1rem 2rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 2rem;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: deeppink;
+    }
+
+    .event {
+      font-size: 1.3rem;
+      margin-top: 3rem;
+    }
+
+    .day-label {
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Celebrity Hunger Games</h1>
+  <button id="startBtn">DAY ONE</button>
+
+  <div class="day-label" id="dayLabel"></div>
+  <div class="event" id="eventText"></div>
+  <button id="nextBtn" style="display:none;">NEXT</button>
+
+  <script>
+    const celebrities = [
+      "Taylor Swift", "Zendaya", "Lady Gaga", "Ariana Grande", "Beyoncé", "Rihanna",
+      "Jennifer Lawrence", "Angelina Jolie", "Megan Fox", "Miley Cyrus", "Zoe Saldana", "Selena Gomez",
+      "Dwayne Johnson", "Robert Patterson", "Ryan Gosling", "Chris Hemsworth", "Harry Styles", "Dylan O'Brian",
+      "Shawn Mendes", "Leonardo DiCaprio", "Timothée Chalamet", "Michael B. Jordan", "Ross Lynch", "Andrew Garfield"
+    ].map(name => ({ name }));
+
+    let alive = [...celebrities];
+    let day = 1;
+    let currentEvent = 0;
+    let showingNight = false;
+    const eventsPerDay = 7;
+    const maxDays = 7;
+    let fallenToday = [];
+
+    const events = [
+      { text: "{0} and {1} team up to take down {2}.", deaths: [2] },
+      { text: "{0} stabs {1} in the back during a fake alliance.", deaths: [1] },
+      { text: "{0} and {1} get into a brutal fight. {0} survives.", deaths: [1] },
+      { text: "{0} sets a trap that catches {1}.", deaths: [1] },
+      { text: "{0} poisons {1}'s food while pretending to help.", deaths: [1] },
+      { text: "{0}, {1}, and {2} get into a brawl—only {0} walks away.", deaths: [1, 2] },
+      { text: "{0} tricks {1} into a pit, ending their game.", deaths: [1] },
+      { text: "{0} and {1} run into each other at the cornucopia—only one leaves alive.", deaths: [1] },
+      { text: "{0} hides in a tree while {1} searches below.", deaths: [] },
+      { text: "{0} throws a spear at {1} from the shadows.", deaths: [1] },
+      { text: "{0} sings a haunting tune that lures {1} into danger.", deaths: [] },
+      { text: "{0} betrays {1} and {2} while pretending to be their friend.", deaths: [1, 2] },
+      { text: "{0} lights a fire to lure in {1}, then attacks.", deaths: [1] },
+      { text: "{0} and {1} form a temporary truce… or do they?", deaths: [] },
+      { text: "{0} makes a fire, and {1} joins them.", deaths: [] },
+      { text: "{0} hunts {1} down, but lets them live.", deaths: []},
+      { text: "{0}, {1}, and {2} run into each other but all pass peacefully.", deaths: []},
+      { text: "{0} sets {1} on fire, but {1} survives.", deaths: []},
+      { text: "{0} gets a sponser. Its distilled water.", deaths: []},
+      { text: "{0} gets an infection and dies.", deaths: [0]},
+      { text: "{0}, {1}, {2}, and {3} form an alliance too hunt down {4}. {3} betrays them and shoots {0} with an arrow.", deaths: [0]},
+      { text: "{0} goes swimming in a lake and gets an infection, but a sponser provides medicine.", deaths: []}
+
+    ];
+
+    const startBtn = document.getElementById("startBtn");
+    const nextBtn = document.getElementById("nextBtn");
+    const eventText = document.getElementById("eventText");
+    const dayLabel = document.getElementById("dayLabel");
+
+    startBtn.addEventListener("click", () => {
+      startBtn.style.display = "none";
+      nextBtn.style.display = "inline-block";
+      showNextEvent();
+    });
+
+    nextBtn.addEventListener("click", () => {
+      if (alive.length <= 1 || day > maxDays) {
+        showWinner();
+        return;
+      }
+
+      if (showingNight) {
+        showingNight = false;
+        fallenToday = [];
+        currentEvent = 0;
+        day++;
+        if (alive.length <= 1 || day > maxDays) {
+          showWinner();
+        } else {
+          showNextEvent();
+        }
+        return;
+      }
+
+      if (currentEvent >= eventsPerDay) {
+        showNightfall();
+      } else {
+        showNextEvent();
+      }
+    });
+
+    function showNextEvent() {
+      if (alive.length <= 1 || day > maxDays) {
+        showWinner();
+        return;
+      }
+
+      dayLabel.textContent = `Day ${day}`;
+
+      const eventObj = events[Math.floor(Math.random() * events.length)];
+      const template = eventObj.text;
+      const deaths = eventObj.deaths;
+
+      const placeholderCount = (template.match(/{\d}/g) || []).length;
+      const selected = [];
+      const available = [...alive];
+
+      while (selected.length < placeholderCount && available.length > 0) {
+        const index = Math.floor(Math.random() * available.length);
+        selected.push(available.splice(index, 1)[0]);
+      }
+
+      const nameMap = selected.map(c => c.name);
+      const finalEvent = template.replace(/{(\d)}/g, (_, i) => nameMap[i]);
+
+      eventText.innerHTML = finalEvent;
+
+      deaths.forEach(i => {
+        const name = selected[i]?.name;
+        if (name && alive.find(c => c.name === name)) {
+          alive = alive.filter(c => c.name !== name);
+          fallenToday.push(name);
+        }
+      });
+
+      currentEvent++;
+    }
+
+    function showNightfall() {
+      showingNight = true;
+      dayLabel.textContent = `Night ${day}`;
+      if (fallenToday.length === 0) {
+        eventText.innerHTML = `<em>No tributes fell today.</em>`;
+      } else {
+        eventText.innerHTML = `<strong>Fallen Tributes:</strong><br><br>${fallenToday.map(name => `💀 ${name}`).join("<br>")}`;
+      }
+    }
+
+    function showWinner() {
+      dayLabel.textContent = "";
+      nextBtn.style.display = "none";
+      if (alive.length === 1) {
+        eventText.innerHTML = `<strong>${alive[0].name} is the victor of the Celebrity Hunger Games!</strong>`;
+      } else if (alive.length === 0) {
+        eventText.innerHTML = `<strong>No one survives. The arena claims them all.</strong>`;
+      } else {
+        eventText.innerHTML = `<strong>The final survivors: ${alive.map(c => c.name).join(", ")}. No winner declared after 7 days.</strong>`;
+      }
+    }
+  </script>
+</body>
+</html>
